@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Upload, Terminal, Tag, Palette, Download } from 'lucide-react';
+import { Upload, Terminal, Tag, Palette, Download, Film, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ModeToggle } from '@/components/mode-toggle';
 import { StepCard } from '@/components/dashboard/StepCard';
@@ -10,6 +10,7 @@ import { StorageImage } from '@/components/StorageImage';
 import { StorageMedia } from '@/components/StorageMedia';
 import { getStorageUrl } from '@/lib/storage';
 import { UploadModal } from '@/components/dashboard/UploadModal';
+import { VideoModal } from '@/components/dashboard/VideoModal';
 
 const STEP_INFO: Record<string, { title: string, description: string, next: string, note?: string }> = {
     created: {
@@ -104,6 +105,7 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
   const [finalDownloadUrl, setFinalDownloadUrl] = useState<string | null>(null);
   const logEndRef = useRef<HTMLDivElement>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
   const fetchProject = async () => {
     try {
@@ -184,15 +186,28 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
 
         <div className="flex-1 overflow-y-auto p-6">
             <div className="grid grid-cols-3 gap-6">
-                {/* Final Video (Full Width if present) */}
+                {/* Final Video Banner */}
                 {project.result?.url && (
-                    <div className="col-span-3 bg-zinc-950 rounded-xl overflow-hidden relative aspect-video shadow-2xl">
-                        <StorageMedia path={project.result.url} type="video" controls className="w-full h-full object-contain" />
-                        {finalDownloadUrl && (
-                            <a href={finalDownloadUrl} download className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition backdrop-blur-sm">
-                                <Download className="w-5 h-5"/>
-                            </a>
-                        )}
+                    <div className="col-span-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                                <Film className="w-6 h-6"/>
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-emerald-900 dark:text-emerald-100">Final Video Ready</h3>
+                                <p className="text-sm text-emerald-700 dark:text-emerald-300">Assembly complete. Your video is ready to watch.</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-3">
+                            <button onClick={() => setIsVideoModalOpen(true)} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-md text-sm font-medium transition flex items-center gap-2">
+                                <Play className="w-4 h-4"/> Watch Now
+                            </button>
+                            {finalDownloadUrl && (
+                                <a href={finalDownloadUrl} download className="px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-md text-sm font-medium transition flex items-center gap-2">
+                                    <Download className="w-4 h-4"/> Download
+                                </a>
+                            )}
+                        </div>
                     </div>
                 )}
 
@@ -312,6 +327,7 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
         </div>
 
         <UploadModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} onUpload={handleUpload} />
+        <VideoModal isOpen={isVideoModalOpen} onClose={() => setIsVideoModalOpen(false)} videoPath={project?.result?.url} downloadUrl={finalDownloadUrl} />
 
         {/* Logs */}
         <div className="h-48 bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-200 dark:border-white/5 flex flex-col flex-shrink-0">
