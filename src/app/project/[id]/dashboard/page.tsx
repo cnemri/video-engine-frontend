@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Upload, Terminal, Tag, Palette, Download, Film, Play } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { Upload, Terminal, Tag, Palette, Download, Film, Play, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ModeToggle } from '@/components/mode-toggle';
 import { StepCard } from '@/components/dashboard/StepCard';
@@ -115,6 +116,10 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
             setProject(data);
             if (data.logs) setLogs(data.logs);
             setIsBusy(data.status === 'running');
+            // Debug log to check if thought is arriving
+            if (data.current_thought) {
+                console.log("Frontend received thought:", data.current_thought);
+            }
         }
     } catch (e) { console.error(e); }
   };
@@ -158,7 +163,7 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
 
   const ActionButton = ({ onClick, disabled, children, variant = 'primary' }: any) => (
         <button 
-            onClick={(e) => { e.stopPropagation(); onClick(); }} 
+            onClick={(e) => { e.stopPropagation(); onClick(); }}
             disabled={disabled}
             className={cn("px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
                 disabled ? "opacity-50 cursor-not-allowed" : "",
@@ -222,13 +227,21 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
                             </div>
                         </StepCard>
                         
-                        <StepCard label="2. Detective Analysis" status={project.report ? 'done' : canRun('waiting_detective') ? 'ready' : 'waiting'} isBusy={isBusy && project.current_step === 'detective'}>
+                        <StepCard 
+                            label="2. Detective Analysis" 
+                            status={project.report ? 'done' : canRun('waiting_detective') ? 'ready' : 'waiting'} 
+                            isBusy={isBusy && project.current_step === 'detective'}
+                        >
                             <ActionButton onClick={() => runStep('detective')} disabled={!canRun('waiting_detective') && !project.report}>
                                 {project.report ? 'Regenerate' : 'Generate'}
                             </ActionButton>
                         </StepCard>
 
-                        <StepCard label="3. Planning Director" status={project.manifest ? 'done' : canRun('waiting_planning') ? 'ready' : 'waiting'} isBusy={isBusy && project.current_step === 'planning'}>
+                        <StepCard 
+                            label="3. Planning Director" 
+                            status={project.manifest ? 'done' : canRun('waiting_planning') ? 'ready' : 'waiting'} 
+                            isBusy={isBusy && project.current_step === 'planning'}
+                        >
                             <ActionButton onClick={() => runStep('planning')} disabled={!canRun('waiting_planning') && !project.manifest}>
                                 {project.manifest ? 'Regenerate' : 'Generate'}
                             </ActionButton>
@@ -240,13 +253,21 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
                             </ActionButton>
                         </StepCard>
 
-                        <StepCard label="5. Anchor Generation" status={Object.keys(project.anchor_map || {}).length > 0 ? 'done' : canRun('waiting_anchors') ? 'ready' : 'waiting'} isBusy={isBusy && project.current_step === 'anchors'}>
+                        <StepCard 
+                            label="5. Anchor Generation" 
+                            status={Object.keys(project.anchor_map || {}).length > 0 ? 'done' : canRun('waiting_anchors') ? 'ready' : 'waiting'} 
+                            isBusy={isBusy && project.current_step === 'anchors'}
+                        >
                             <ActionButton onClick={() => runStep('anchors')} disabled={!canRun('waiting_anchors') && Object.keys(project.anchor_map || {}).length === 0}>
                                 {Object.keys(project.anchor_map || {}).length > 0 ? 'Regenerate' : 'Generate'}
                             </ActionButton>
                         </StepCard>
 
-                        <StepCard label="6. Production (Veo/TTS)" status={Object.keys(project.video_map || {}).length > 0 ? 'done' : canRun('waiting_production') ? 'ready' : 'waiting'} isBusy={isBusy && project.current_step === 'production'}>
+                        <StepCard 
+                            label="6. Production (Veo/TTS)" 
+                            status={Object.keys(project.video_map || {}).length > 0 ? 'done' : canRun('waiting_production') ? 'ready' : 'waiting'} 
+                            isBusy={isBusy && project.current_step === 'production'}
+                        >
                             <ActionButton onClick={() => runStep('production')} disabled={!canRun('waiting_production') && Object.keys(project.video_map || {}).length === 0}>
                                 {Object.keys(project.video_map || {}).length > 0 ? 'Regenerate' : 'Generate'}
                             </ActionButton>
@@ -271,9 +292,42 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
                                 Note: {currentInfo.note}
                             </div>
                         )}
-                        <div className="flex items-center gap-2 text-sm font-medium text-indigo-800 dark:text-indigo-200">
+                        
+                        {project.status === 'running' && project.current_thought && (
+                            <div className="mt-4 p-3 bg-white/50 dark:bg-black/20 rounded-lg border border-indigo-100 dark:border-indigo-900/30">
+                                <div className="flex items-center gap-2 text-xs font-medium text-indigo-600 dark:text-indigo-400 mb-1">
+                                    <Sparkles className="w-3 h-3 animate-pulse"/> AI Thinking Process
+                                </div>
+                                <div className="text-xs text-zinc-600 dark:text-zinc-400 font-mono leading-relaxed whitespace-pre-wrap break-words max-h-[300px] overflow-y-auto">
+                                    <ReactMarkdown
+                                        components={{
+                                            strong: ({node, ...props}) => <strong className="font-bold text-indigo-700 dark:text-indigo-300" {...props} />
+                                        }}
+                                    >
+                                        {project.current_thought.replace(/\\n/g, '\n')}
+                                    </ReactMarkdown>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="flex items-center gap-2 text-sm font-medium text-indigo-800 dark:text-indigo-200 mt-4">
                             Next Step: <span className="bg-white dark:bg-indigo-950 px-2 py-1 rounded border border-indigo-200 dark:border-indigo-800">{currentInfo.next}</span>
                         </div>
+
+                        {(project.status === 'running' && ['assets', 'anchors', 'production', 'assembly'].includes(project.current_step)) && (
+                            <div className="mt-4 pt-4 border-t border-indigo-100 dark:border-indigo-900/30">
+                                <div className="flex justify-between text-xs mb-1 text-indigo-800 dark:text-indigo-200 font-medium">
+                                    <span>Progress</span>
+                                    <span>{Math.round(project.progress || 0)}%</span>
+                                </div>
+                                <div className="w-full bg-white/50 dark:bg-black/20 rounded-full h-1.5 overflow-hidden border border-indigo-100 dark:border-indigo-900/30">
+                                    <div 
+                                        className="bg-indigo-500 h-full rounded-full transition-all duration-500 ease-out" 
+                                        style={{ width: `${project.progress || 0}%` }}
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 rounded-xl p-6 space-y-4">

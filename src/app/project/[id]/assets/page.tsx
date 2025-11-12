@@ -81,7 +81,7 @@ export default function AssetsPage({ params }: { params: { id: string } }) {
                                 </div>
                             )}
                             <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 to-transparent text-white">
-                                <div className="text-xs font-medium truncate">{asset.id}</div>
+                                <div className="text-xs font-medium truncate">{asset.name || asset.id}</div>
                                 <div className="text-[10px] opacity-70 capitalize">{asset.type}</div>
                             </div>
                         </button>

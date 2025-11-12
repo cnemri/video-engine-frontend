@@ -53,7 +53,7 @@ export function AssetDetailSheet({ pid, asset, isGenerated, onClose, onUpdate }:
     return (
         <div className="w-96 border-l border-zinc-200 dark:border-white/5 bg-white dark:bg-zinc-900 flex flex-col overflow-y-auto absolute right-0 top-0 bottom-0 z-10 shadow-xl">
             <div className="h-14 border-b border-zinc-200 dark:border-white/5 flex items-center justify-between px-4 flex-shrink-0">
-                <h3 className="font-medium truncate pr-4">{asset.id}</h3>
+                <h3 className="font-medium truncate pr-4">{asset.name || asset.id}</h3>
                 <button onClick={onClose} className="p-1 hover:bg-zinc-100 dark:hover:bg-white/10 rounded-full transition flex-shrink-0"><X className="w-4 h-4"/></button>
             </div>
             <div className="p-4 space-y-6 flex-1">
@@ -76,6 +76,10 @@ export function AssetDetailSheet({ pid, asset, isGenerated, onClose, onUpdate }:
                 </div>
 
                 <div className="space-y-4">
+                    <div>
+                        <label className="text-xs font-medium text-zinc-500 uppercase">Name</label>
+                        <input type="text" className="w-full mt-1 bg-zinc-50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-md p-2 text-sm outline-none focus:border-indigo-500" value={editedAsset.name || ""} onChange={e => setEditedAsset({...editedAsset, name: e.target.value})} />
+                    </div>
                     <div>
                         <label className="text-xs font-medium text-zinc-500 uppercase">Description</label>
                         <textarea className="w-full mt-1 bg-zinc-50 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-md p-2 text-sm resize-none outline-none focus:border-indigo-500" rows={3} value={editedAsset.description} onChange={e => setEditedAsset({...editedAsset, description: e.target.value})} />
